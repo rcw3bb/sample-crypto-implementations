@@ -13,11 +13,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class SymmetricTest {
+public class AESECBPKCS5PaddingTest {
 
     private static String KEY;
     private static final String PLAIN_TEXT = "THIS IS A SECRET";
-    private static String CIPER_TEXT;
+    private static String CIPHER_TEXT;
 
     @BeforeAll
     public static void initialize() {
@@ -46,14 +46,16 @@ public class SymmetricTest {
     public void testAES256Encrypt() throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         final var secret = decodeKey(KEY);
 
-        final var cipher = Cipher.getInstance("AES");
+        final var cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
         cipher.init(Cipher.ENCRYPT_MODE, secret);
 
         final var plaintextBytes = PLAIN_TEXT.getBytes(StandardCharsets.UTF_8);
         final var ciphertextBytes = cipher.doFinal(plaintextBytes);
-        CIPER_TEXT = Base64.getEncoder().encodeToString(ciphertextBytes);
+        CIPHER_TEXT = Base64.getEncoder().encodeToString(ciphertextBytes);
 
-        assertFalse(CIPER_TEXT.isEmpty());
+        System.out.printf("Cipher %s%n", CIPHER_TEXT);
+
+        assertFalse(CIPHER_TEXT.isEmpty());
     }
 
     @Test
@@ -61,12 +63,13 @@ public class SymmetricTest {
     public void testAES256Decrypt() throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         final var secretKey = decodeKey(KEY);
 
-        final var cipher = Cipher.getInstance("AES");
+        final var cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
         cipher.init(Cipher.DECRYPT_MODE, secretKey);
 
-        final var decryptedBytes = cipher.doFinal(Base64.getDecoder().decode(CIPER_TEXT));
+        final var decryptedBytes = cipher.doFinal(Base64.getDecoder().decode(CIPHER_TEXT));
         final var decryptedText = new String(decryptedBytes, StandardCharsets.UTF_8);
 
+        System.out.printf("Secret %s%n", decryptedText);
         assertEquals(PLAIN_TEXT, decryptedText);
     }
 
